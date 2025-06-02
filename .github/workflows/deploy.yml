@@ -1,3 +1,10 @@
+name: Deploy to AWS ECR
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest

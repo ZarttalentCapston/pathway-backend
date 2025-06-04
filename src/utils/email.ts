@@ -60,3 +60,37 @@ export const sendVerificationEmail = async (to : string, verificationToken : str
     throw new Error("Failed to send verification email")
    }
 }
+
+
+export const sendContactEmail = async (fromName: string, fromEmail: string, message: string) => {
+  const sendSmtpEmail = new Brevo.SendSmtpEmail();
+
+  sendSmtpEmail.sender = {
+    email: SENDER_EMAIL,
+    name: SENDER_NAME,
+  };
+
+  // Send contact message to yourself or your team email
+  sendSmtpEmail.to = [
+    {
+      email: SENDER_EMAIL, // You can change this to a team inbox
+    },
+  ];
+
+  sendSmtpEmail.subject = "New Contact Form Message from Pathway";
+  sendSmtpEmail.htmlContent = `
+    <p><strong>Name:</strong> ${fromName}</p>
+    <p><strong>Email:</strong> ${fromEmail}</p>
+    <p><strong>Message:</strong></p>
+    <p>${message}</p>
+  `;
+  sendSmtpEmail.textContent = `Name: ${fromName}\nEmail: ${fromEmail}\nMessage: ${message}`;
+
+  try {
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log(`Contact form email sent from ${fromEmail}`);
+  } catch (error) {
+    console.error("Error sending contact form email:", error);
+    throw new Error("Failed to send contact form email");
+  }
+};

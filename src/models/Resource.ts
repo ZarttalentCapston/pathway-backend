@@ -8,6 +8,7 @@ interface ResourceAttributes {
   title: string;
   url: string;
   roleId: number;
+  skills: string[];
 }
 
 class Resource extends Model<ResourceAttributes> implements ResourceAttributes {
@@ -15,6 +16,7 @@ class Resource extends Model<ResourceAttributes> implements ResourceAttributes {
   public title!: string;
   public url!: string;
   public roleId!: number;
+  public skills!: string[];
 }
 
 Resource.init(
@@ -22,6 +24,7 @@ Resource.init(
     title: { type: DataTypes.STRING },
     url: { type: DataTypes.STRING },
     roleId: { type: DataTypes.INTEGER },
+    skills: { type : DataTypes.JSONB, defaultValue: []}
   },
   { sequelize, modelName: "Resource" }
 );

@@ -1,55 +1,69 @@
-import { Request, Response } from "express"
+import { Request, Response } from "express";
 import { validationResult } from "express-validator";
-import { User } from "../models";
-import {Role} from "../models";
+import { User, Role } from "../models";
 
-
-
-export const setSkills = async (req: Request, res: Response) : Promise<void> => {
+export const setCurrentSkills = async (req: Request, res: Response): Promise<void> => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-     res.status(400).json({ errors: errors.array() });
-     return
+    res.status(400).json({ errors: errors.array() });
+    return;
   }
 
   const userId = req.user?.userId;
-  if (!userId) {
-     res.status(401).json({ error: "Unauthorized" });
-     return
+  const { currentSkills } = req.body;
+
+   console.log("Received skills payload:", req.body);
+  console.log("Authenticated user id:", req.user?.userId);
+
+
+  if (!userId || !Array.isArray(currentSkills)) {
+    res.status(400).json({ error: "Missing or invalid user/skills" });
+    return;
   }
 
-  const { skills } = req.body;
-
   try {
-    const user = await User.findByPk(userId, {
-      include: [{ model: Role, as: "targetRole" }],
-    });
-
+    const user = await User.findByPk(userId);
     if (!user) {
-       res.status(404).json({ error: "User not found" });
-       return
+      res.status(404).json({ error: "User not found" });
+      return;
     }
 
-    if (!user.targetRole) {
-      res.status(404).json({ error: "Target role not found" });
-      return
+    const targetRole = await Role.findByPk(user.targetRoleId);
+    if (!targetRole) {
+      res.status(400).json({ error: "Target role not set or not found" });
+      return;
     }
 
-    const progress = {
-      completedSkills: skills.length,
-      totalSkills: user.targetRole.requiredSkills.length,
+    const requiredSkills: string[] = targetRole.requiredSkills || [];
+
+    // Determine missing skills
+    const skillsToAcquire = requiredSkills.filter(
+      (skill) => !currentSkills.includes(skill)
+    );
+
+    // Prepare progress updates
+    const updatedProgress = {
+      ...user.progress,
       onboardingStep: 3,
+      totalSkills: requiredSkills.length,
+      acquiredSkills: skillsToAcquire, 
+      completedSkills: [], 
     };
 
-    await User.update({ skills, progress }, { where: { id: userId } });
-
-     res.json({
-      message: "Skills updated",
-      progress,
-      nextStep: "/dashboard",
+    await user.update({
+      skills: currentSkills,
+      skillsToAcquire,
+      progress: updatedProgress,
     });
-  } catch (error) {
-    console.error("Error updating skills:", error);
-     res.status(500).json({ error: "Server error" });
+
+    res.json({
+      message: "Skills updated",
+      skillsToAcquire,
+      nextStep: "/summary",
+    });
+
+  } catch (err) {
+    console.error("Error updating skills:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };

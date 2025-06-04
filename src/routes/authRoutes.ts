@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, login, forgotPassword, resetPassword, verifyEmail } from "../controller/authController";
+import { register, login, forgotPassword, verifyOtp, resetPassword, verifyEmail } from "../controller/authController";
 import { validateRegister, validateLogin, validateForgotPassword, validateResetPassword, validateVerifyEmail } from "../middleware/validationMiddleware";
 
 const router = Router()
@@ -9,6 +9,8 @@ router.post("/register", validateRegister, register)
 router.post("/login", validateLogin,  login)
 
 router.post("/forgot-password", validateForgotPassword, forgotPassword)
+
+router.post("/verify-otp", verifyOtp)
 
 router.post("/reset-password", validateResetPassword,  resetPassword)
 

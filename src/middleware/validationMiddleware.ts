@@ -40,11 +40,8 @@ export const validateForgotPassword = [
 
 export const validateResetPassword = [
 
-    body("email")
-    .isEmail()
-    .withMessage("Valid email is required"),
 
-    body("otp")
+    body("otpCode")
     .notEmpty()
     .withMessage("OTP is required"),
 
@@ -80,11 +77,26 @@ export const validateTargetRole = [
 ];
 
 export const validateSkills = [
-  body("skills")
+  body("currentSkills")
     .isArray({ min: 1 }).withMessage("Skills must be a non-empty array")
     .custom((skills) => skills.every((skill: any) => typeof skill === "string"))
     .withMessage("Each skill must be a string"),
 ];
+
+
+export const validateContact = [
+  body("name")
+  .notEmpty()
+  .withMessage("Name is required"),
+
+  body("email")
+  .isEmail()
+  .withMessage("Valid email is required"),
+
+  body("message")
+  .notEmpty()
+  .withMessage("Message is required")
+]
 
 
 

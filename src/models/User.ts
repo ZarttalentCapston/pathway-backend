@@ -2,16 +2,21 @@ import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database';
 import Role from './Role';
 
-
 class User extends Model {
   public id!: number;
   public email!: string;
   public password!: string;
-  public currentRole?: string; 
+  public currentRole?: string;
   public skills!: string[];
+  public skillsToAcquire!: string[];
   public targetRole?: Role;
   public targetRoleId?: number;
-  public progress!: { completedSkills: number[];  totalSkills : number; onboardingStep: number };
+  public progress!: {
+    onboardingStep: number;
+    completedSkills: number[];
+    acquiredSkills: string[];
+    totalSkills: number;
+  };
   public otpCode!: string;
   public otpCodeExpiry?: Date;
   public isVerified!: boolean;
@@ -36,7 +41,16 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    currentRole: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     skills: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false,
+      defaultValue: [],
+    },
+    skillsToAcquire: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: false,
       defaultValue: [],
@@ -52,9 +66,17 @@ User.init(
     progress: {
       type: DataTypes.JSONB,
       allowNull: false,
-      defaultValue: { completedResources: [], acquiredSkills: [] },
+      defaultValue: {
+        onboardingStep: 0,
+        completedSkills: [],
+        acquiredSkills: [],
+        totalSkills: 0,
+      },
     },
-
+    otpCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     otpCodeExpiry: {
       type: DataTypes.DATE,
       allowNull: true,
@@ -72,9 +94,8 @@ User.init(
     sequelize,
     modelName: 'User',
     tableName: 'Users',
-    timestamps: true, 
+    timestamps: true,
   }
 );
-
 
 export default User;
